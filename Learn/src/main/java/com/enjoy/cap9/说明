@@ -1,0 +1,19 @@
+Spring的自動裝配的优先级：
+    @Autowired 默认按照类型进行注入，如果找不到就会按照名称进行注入
+    @Resource 默认按照名称进行注入，如果找不到则会按照类型进行注入。
+        如果@Resource注解和@Qualifier注解同时使用时，先按照@Resource进行注入，如果找不到则会按照@Qualifier进行注入，在找不到就会抛出异常，而不会转换成类型注入
+    @Inject 和@Autowired注解一样，都是按照类型注入。@Inject是jsr330规范，@Autowired是spring的注解
+        如果需要转换成按照名称注入，@Autowired需要使用@Qualifier注解指定注入的名称，@Inject需要使用@Named指定注入的名称
+
+    @Qualifier 当容器中有多个类型相同的bean实例时，可以通过@Qualifier声明具体注入的是哪一个
+    @Primary 在多个相同的bean时，通过该注解指定bean的优先级，即@Primany的bean会优先被注入
+
+
+IOC容器：简便流程
+    1、加载*.proppertise 配置文件
+    2、声明Map
+    3、ComponentScan()扫描需要加载的bean
+    4、利用反射机制class.forName() 实例化bean
+    5、将实例化的bean加入Map
+
+
