@@ -1,0 +1,7 @@
+类似于springmvc的分层结构
+1、controller:前端控制器
+2、dao:mybatis的mapper映射接口
+3、model：pojo类
+4、service：服务接口
+    impl：服务实现
+5、util：全局工具类

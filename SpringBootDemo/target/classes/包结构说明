@@ -1,0 +1,4 @@
+1、mapping：mybatis的映射配置文件存放路径
+2、static：系统静态文件存放路径（或者public），包括html、图片、视音频等
+3、templates：模板文件
+4、application.properties：springboot的核心配置文件（包括数据源、日志、访问路径设置、映射文件存放地址等等）
