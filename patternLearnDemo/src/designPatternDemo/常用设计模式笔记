@@ -1,0 +1,110 @@
+1、Proxy代理模式
+    代理模式分为三种：静态代理、动态代理、cglib代理
+    静态代理：1）代理类与被代理类实现同一个接口（公共接口）
+        2）然后在代理类中持有公共接口的实例类，在代理类中实现公共接口的方法时，调用被代理的类的实现方法，同时加上自己的逻辑。
+    动态代理：对于静态代理，存在每新增一个接口都要写一个代理类，当新增接口很多时，可能会导致系统的类过多而导致系统代码复杂的问题。
+        1）建立一个动态代理类
+        2）持有一个Object对象target，通过类的构造方法传入被代理的对象（实现一个接口）。
+        3）通过反射类java.lang.reflect.Proxy的newProxyInstance(ClassLoader classLoader,Class<?>[] interfaces,InvocationHandler handler){};方法生成一个代理对象的实例
+            classLoader（目标类加载器）——传入被代理对象的target.getClass().getClassLoader()获取被代理对象的类加载器；
+            interfaces（目标类实现的接口）——传入的被代理对象的target.getClass().getInterfaces()获取。
+            handler（代理类的处理器）——使用new InvoacationHandler{}内部类，重写invoke(Object proxy, Method method, Object[] args)方法
+                proxy:被代理对象，method：被代理方法，args：方法的参数。方法内部使用method.invoke(target,args)返回一个目标对象，同时能在invoke方法中加上自己的业务逻辑。
+        存在的几个考察点：
+            问题1：为什么只能代理实现接口的类？
+                 因为动态代理实际上是程序在运行中，根据被代理的接口来动态生成代理类的class文件（$Proxy0.class），并加载class文件运行的过程。
+                 $Proxy0.class：public final class $Proxy0 extends Proxy implements Interface {
+                                      public $Proxy0(InvocationHandler paramInvocationHandler) {
+                                          super(paramInvocationHandler);
+                                        }
+                 由于java的单继承，动态生成的代理类已经继承了Proxy类，就不能再继承其他类，所以只能靠实现被代理类的接口的形式，所以jdk动态代理必须要有接口。
+             问题2：为什么调用代理类的方法会自动进入InvocationHandler的invoke()方法？
+                 在$Proxy0的定义中，构造方法传入invocationHandler实例，每一个被代理接口的方法都会在代理类中生成一个对应的实现方法。并在实现方法中最终调用invocationHandler的invoke方法。
+    cglib代理：前两种方式是通过jdk的源码实现的，只能代理实现接口的类。cglib是第三方的接口实现，需要引包。
+        1）创建一个代理类实现MethodIntereptcor接口。
+        2）代理类持有一个object对象，并通过代理类的构造方法实例化Object对象。
+        3）创建一个方法，返回被代理的对象。
+            步骤1、创建一个Enhancer工具类实例对象；Enhancer是用来创建被代理的工具类
+            步骤2、设置工具类的父类，enhancer.setSuperClass（object.getClass）;
+            步骤3、设置工具类的回调函数，enhancer.setCallback(this);
+            步骤4、创建子类，即被代理对象，并返回。return enhancer.create();
+        4）重写intercept方法，会调用目标对象的方法。
+
+
+2、Factory工厂模式
+    分为简单工厂模式、工厂方法模式、抽象工厂模式。
+    以生产车辆为例（比如，长安、传祺）
+        简单工厂：属于一个工厂对应多个产品，工厂通过请求的参数判断需要返回哪一个产品的实例，这种方式简单粗暴，但是对于新增一个产品需要修改工厂代码，违反开闭原则
+            类似于创建一个车辆接口，写两个类（长安、传祺）实现该接口，在简单工厂类中写一个方法通过输入的参数类型返回对应的车辆（返回参数是接口的实现类），
+            假如需要生产一个长安车，通过输入的类型获取对应的长安车，但是每增加一个车辆产品都需要去修改工厂类。
+        工厂方法模式：在简单工厂模式的基础上再加上一层封装。只考虑同等级的产品。
+            先创建一个车辆接口，一个工厂接口（该接口包含一个返回车辆接口实现类的抽象方法）两个抽象类，
+            假如需要创建一个长安车，创建一个车辆品牌（长安）实现车辆接口的时候，同时新增一个（长安）工厂类实现抽象工厂接口，该工厂实现持有抽象方法，返回一个实现车辆接口的长安车实例。
+            这种方式实现了开闭原则。每新增一个车的品牌时，同时新增一个类实现抽象车辆接口，和一个实现抽象工厂接口，不需要修改原有的接口。
+        抽象工厂模式：工厂方法中每创建一个品牌都需要创建一个工厂，品牌过多时可能导致系统产生类爆炸。抽象工厂在工厂方法的基础上提出一个“产品族”的概念，将相近功能的具体类组成一个族。
+            比如生产车辆时，除了车辆品牌，车辆还有不同的颜色，长安车有不同的颜色，传祺车有不同的颜色，这是一个车和颜色的组合。
+            新建两个抽象接口（车辆品牌接口、车辆颜色接口）；品牌接口下有两个实现类（长安车、传祺车），颜色接口有两个实现类（黑色、白色）。
+            新建一个抽象工厂，该工厂含有两个抽象方法（获取车辆品牌，获取车辆颜色），
+            创建两个具体工厂（车辆品牌工厂、车辆颜色工厂）实现抽象工厂，一个工厂获取车辆品牌（车辆品牌接口的实现类）、一个获取车辆颜色（车辆颜色的实现类），进行对应的组合。
+
+
+3、Singleton单例模式
+    注意事项：保证系统内存中只有一个实例对象，节省系统资源，适用对象——需要频繁创建和销毁的对象，创建耗时多且复杂的，工具类之类的
+    8种写法：
+        饿汉式两种（静态常量，静态代码块） 可用
+        懒汉式三种（线程安全、线程不安全）
+        双重检验锁  推荐
+        静态内部类  推荐
+        枚举  推荐
+
+    单例模式和序列化的关系
+        序列化会破坏单例模式，通过序列化和反序列化会生成一个新的对象，从而破坏单例模式。
+        原理：对象的序列化时通过ObjectOutputStream和ObjectInputStream实现的，
+        1、ObjectInputStream的readObject()方法
+        2、readObject()方法会调用readObject0(false)方法
+        3、readObject0方法中对于Object对象，通过switch判断序列化的是否为TC_OBJECT，是调用checkResolve(readOrdinaryObject(unshared));
+        4、readOrdinaryObject方法通过obj = desc.isInstantiable() ? desc.newInstance() : null; 对象是否能在运行时被实例化，能通过反射创建一个新的obj对象
+        5、readOrdinaryObject方法会对创建的obj进行判断（obj != null && handles.lookupException(passHandle) == null && desc.hasReadResolveMethod()）
+            hasReadResolveMethod（）：如果对象实现了Serializable或者externalizable接口并且重写了readResolve方法返回true
+        6、重写了方法会调用Object rep = desc.invokeReadResolve(obj); 通过反射的方式调用要被反序列化的类的readResolve（）方法，
+            如果rep不为空，将rep赋值给obj，返回obj。
+
+    所以双重校验锁的解决反序列化的方式为
+    public class DoubleCheckSingleton {
+        // 使用volatile可以防止多个线程在初始化的时候可能出现问题，
+        // 例如线程A发现该变量lanHan2Factory没有实例化，然后他获取锁并开始变量的初始化，
+        // 有可能存在这样一种情况，A正在执行初始化之前就更新lanHan2Factory并将其指向正在初始化的对象，
+        // 此时线程B发现lanHan2Factory的状态是已经被初始化，直接获取lanHan2Factory的值，发现还没有初始化完，就可能造成程序崩溃
+        // jdk5之后,这一个问题被修正
+        private static volatile DoubleCheckSingleton lanHan2Factory;
+        public static DoubleCheckSingleton getInstance(){
+                if(null == lanHan2Factory){
+                    synchronized (DoubleCheckSingleton.class){
+                        if(null == lanHan2Factory){
+                            lanHan2Factory = new DoubleCheckSingleton();
+                        }
+                    }
+                }
+                return lanHan2Factory;
+            }
+            // 写了该方法会防止序列化破坏单例模式
+            private Object readResolve() {
+                return lanHan2Factory;
+            }
+        }
+
+
+4、Delegate委派模式
+
+
+5、Strategy策略模式
+
+6、Prototype原型模式
+
+7、Template模板方法模式
+
+8、Observer观察者模式
+
+9、Decorator装饰者模式
+
+10、Adaptor适配器模式

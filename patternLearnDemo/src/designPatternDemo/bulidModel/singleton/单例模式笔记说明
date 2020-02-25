@@ -1,0 +1,52 @@
+1、jdk中的单例模式
+    1.1、java.lang.Runtime是经典的单例模式
+        静态成员饿汉式单例模式
+
+
+注意事项：保证系统内存中只有一个实例对象，节省系统资源，适用对象——需要频繁创建和销毁的对象，创建耗时多且复杂的，工具类之类的
+
+
+8种写法：
+    饿汉式两种（静态常量，静态代码块） 可用
+    懒汉式三种（线程安全、线程不安全）
+    双重检验锁  推荐
+    静态内部类  推荐
+    枚举  推荐
+
+单例模式和序列化的关系
+    序列化会破坏单例模式，通过序列化和反序列化会生成一个新的对象，从而破坏单例模式。
+    原理：对象的序列化时通过ObjectOutputStream和ObjectInputStream实现的，
+    1、ObjectInputStream的readObject()方法
+    2、readObject()方法会调用readObject0(false)方法
+    3、readObject0方法中对于Object对象，通过switch判断序列化的是否为TC_OBJECT，是调用checkResolve(readOrdinaryObject(unshared));
+    4、readOrdinaryObject方法通过obj = desc.isInstantiable() ? desc.newInstance() : null; 对象是否能在运行时被实例化，能通过反射创建一个新的obj对象
+    5、readOrdinaryObject方法会对创建的obj进行判断（obj != null && handles.lookupException(passHandle) == null && desc.hasReadResolveMethod()）
+        hasReadResolveMethod（）：如果对象实现了Serializable或者externalizable接口并且重写了readResolve方法返回true
+    6、重写了方法会调用Object rep = desc.invokeReadResolve(obj); 通过反射的方式调用要被反序列化的类的readResolve（）方法，
+        如果rep不为空，将rep赋值给obj，返回obj。
+
+所以双重校验锁的解决反序列化的方式为
+public class DoubleCheckSingleton {
+    // 使用volatile可以防止多个线程在初始化的时候可能出现问题，
+    // 例如线程A发现该变量lanHan2Factory没有实例化，然后他获取锁并开始变量的初始化，
+    // 有可能存在这样一种情况，A正在执行初始化之前就更新lanHan2Factory并将其指向正在初始化的对象，
+    // 此时线程B发现lanHan2Factory的状态是已经被初始化，直接获取lanHan2Factory的值，发现还没有初始化完，就可能造成程序崩溃
+    // jdk5之后,这一个问题被修正
+    private static volatile DoubleCheckSingleton lanHan2Factory;
+
+    public static DoubleCheckSingleton getInstance(){
+        if(null == lanHan2Factory){
+            synchronized (DoubleCheckSingleton.class){
+                if(null == lanHan2Factory){
+                    lanHan2Factory = new DoubleCheckSingleton();
+                }
+            }
+        }
+        return lanHan2Factory;
+    }
+    // 写了该方法会防止序列化破坏单例模式
+    private Object readResolve() {
+        return lanHan2Factory;
+    }
+}
+

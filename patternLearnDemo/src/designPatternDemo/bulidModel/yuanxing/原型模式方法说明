@@ -1,0 +1,22 @@
+Prototype：原型模式
+
+工作原理：通过将一个原型对象传给那个要发动创建的对象， 主要是发动创建对象拷贝原型
+
+1、Spring中使用原型模式
+    1、原型bean的创建
+    bean.xml中
+    <bean id = "id1" class = "com.spring.bean.Monster" scope = "prototype"/>
+
+    Test.java(应用案例)
+    ApplicationContext applicationContext = new ClassPathApplicationContext("bean.xml");
+
+    Object bean = applicationContext.getBean("id1");
+
+getFactory.getBean()
+
+1、淺拷貝
+    浅拷贝是对当前类直接使用clone（）方法，拷贝得到的引用类型的成员是复制原有的应用类型的地址，不是重新拷贝一份，会造成
+    多个实例对象的引用成员变量指向同一个对象，造成安全问题，简单点来说就是A复制得到了B，A的属性进行修改时，B也会跟着变化就是浅拷贝
+2、深拷貝
+    深拷贝是针对浅拷贝提出的改进方式，如果当前类不含有引用类型不需要进行深拷贝，
+    共两种方式，一种是对当前类所引用的引用变量重写clone方法，二种是通过将对象序列化成一个字节流，再将字节流反序列化成一个对象

@@ -1,0 +1,33 @@
+装饰者模式：动态的将新功能附加到对象上，在对象功能扩展方面 ，它比继承更有弹性，装饰者模式体现了开闭原则（OCP）；
+
+例子详解：
+    一个咖啡店有很多种类的咖啡（Espresso、LongBlack）和调味品（Chololate、milk）
+    使用装饰者模式说明：
+    1、定义一个抽象类AbstractClass Drink作为所有类的父类，含有两个参数描述Desc和price（价格）和一个计算总费用的抽象方法Cost（子类实现）。
+    2、Coffee作为所有咖啡的根类，继承自Drink类，实现Cost方法，返回Drink的getPrice（）的值，单点咖啡只有咖啡单价的钱。
+    3、Espresso、LongBlack 继承Coffee，在初始化（构造器）时设置每种咖啡的描述和单价。
+    4、Decorator装饰者类（调味品）继承自Drink类，持有Drink对象（实际是每种咖啡）在构造器中引入；重写Cost方法，总费用等于调味品的价格加上咖啡的价格。
+    5、Chololate、milk每种调味品继承自Decorator类，初始化（构造器）时重写父类的带参构造，设置每一类调味品的描述和单价。
+    6、测试： 装饰者模式下点单，2份巧克力+一份牛奶的longBlack，类似于对咖啡对象进行一层一层的装饰。
+              // 1、点一份LongBlack
+              Drink order = new LongBrack();
+              System.out.println("费用："+order.cost());
+
+              // 2、加入一份牛奶
+              order = new Milk(order);
+              System.out.println("费用："+order.cost());
+
+              // 3、加入一份巧克力
+              order = new Chocolate(order);
+              System.out.println("费用："+order.cost());
+
+              // 4、再加上一份巧克力
+              order = new Chocolate(order);
+              System.out.println("费用："+order.cost());
+
+     7、优点，如果需要再加上一种咖啡类型，只需要写一个类继承Coffee类，设置描述和单价就可调用。
+
+JDK中的装饰者模式分析
+    inputStream
+
+
